@@ -34,6 +34,7 @@ public class ImageUtilities {
     /** Cache für Transparent gemachte Bilder */
     public static HashMap<Image,Image> m_clTransparentsCache = new HashMap<Image,Image>();
     public static ImageIcon MINILEER = new ImageIcon(new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB));
+
 	/**
 	 * Tauscht eine Farbe im Image durch eine andere
 	 *
@@ -356,7 +357,7 @@ public class ImageUtilities {
 	 * Return ImageIcon for Position
 	 *
 	 */
-	public static ImageIcon getImage4Position(MatchRoleID position, int trickotnummer) {
+	public static Icon getImage4Position(MatchRoleID position, int trickotnummer) {
 	    if (position == null) {
 	        return ImageUtilities.getImage4Position(0, (byte) 0, trickotnummer);
 	    }
@@ -368,10 +369,10 @@ public class ImageUtilities {
 	 * Return ImageIcon for Position
 	 *
 	 */
-	public static ImageIcon getImage4Position(int posid, byte taktik, int trickotnummer) {
+	public static Icon getImage4Position(int posid, byte taktik, int trickotnummer) {
 		Color trickotfarbe = null;
 		Image trickotImage = null;
-		ImageIcon komplettIcon = null;
+		Icon komplettIcon = null;
 		StringBuilder key = new StringBuilder(20);
 		// Im Cache nachsehen
 		key.append("trickot_").append(posid).append("_").append(taktik).append("_").append(trickotnummer);
@@ -384,7 +385,7 @@ public class ImageUtilities {
 			trickotImage = changeColor(
 					changeColor(
 							makeColorTransparent(
-									ThemeManager.getIcon(HOIconName.TRICKOT).getImage(),
+									iconToImage(ThemeManager.getIcon(HOIconName.TRICKOT)),
 									Color.WHITE
 							),
 							Color.WHITE,
@@ -394,7 +395,7 @@ public class ImageUtilities {
 			komplettIcon = new ImageIcon(trickotImage);
 			BufferedImage largeImage = new BufferedImage(28, 14, BufferedImage.TYPE_INT_ARGB);
 			// Large Icon
-			largeImage = (BufferedImage) merge(largeImage, komplettIcon.getImage());
+			largeImage = (BufferedImage) merge(largeImage, iconToImage(komplettIcon));
 			komplettIcon = new ImageIcon(largeImage);
 	
 		// return new BufferedImage( 1, 1, BufferedImage.TYPE_INT_ARGB );
@@ -428,7 +429,7 @@ public class ImageUtilities {
 				g2d.drawString(trickotnummer + "", xPosText, 13);
 	
 				// Zusammenführen
-				image = (BufferedImage) merge(image, komplettIcon.getImage());
+				image = (BufferedImage) merge(image, iconToImage(komplettIcon));
 	
 				// Icon erstellen und in den Cache packen
 				komplettIcon = new ImageIcon(image);
@@ -448,6 +449,10 @@ public class ImageUtilities {
 
 	public static ImageIcon getLeagueFlagIcon(int iLeague) {
 		return ThemeManager.instance().classicSchema.loadImageIcon("flags/"+ iLeague + "flag.png");
+	}
+
+	public static BufferedImage toBufferedImage(Icon icon) {
+		return toBufferedImage(iconToImage(icon));
 	}
 
 	public static BufferedImage toBufferedImage(Image image) {
@@ -535,7 +540,8 @@ public class ImageUtilities {
 
     public static Icon getJerseyIcon(int posid, byte taktik, int trickotnummer, int size) {
         String key = "trickot_" + posid + "_" + taktik + "_" + trickotnummer + "_" + size;
-        Icon komplettIcon = ThemeManager.getIcon(key);
+        Icon komplettIcon = ThemeManager.instance().getIcon(key);
+//		Icon komplettIcon = cachedMap.get(key);
 
         if (komplettIcon == null) {
             Color jerseyColor = getJerseyColorByPosition(posid);
@@ -647,6 +653,31 @@ public class ImageUtilities {
         Object imagePath = ThemeManager.getIconPath(key);
         return IconLoader.get().getIcon(Objects.requireNonNull(imagePath).toString(), width, height);
     }
+
+	/**
+	 * Transforms an icon into an image.
+	 * Cf. 	https://stackoverflow.com/a/5831357
+	 * @param icon
+	 * @return
+	 */
+	public static Image iconToImage(Icon icon) {
+		if (icon instanceof ImageIcon) {
+			return ((ImageIcon)icon).getImage();
+		}
+		else {
+			int w = icon.getIconWidth();
+			int h = icon.getIconHeight();
+			GraphicsEnvironment ge =
+					GraphicsEnvironment.getLocalGraphicsEnvironment();
+			GraphicsDevice gd = ge.getDefaultScreenDevice();
+			GraphicsConfiguration gc = gd.getDefaultConfiguration();
+			BufferedImage image = gc.createCompatibleImage(w, h);
+			Graphics2D g = image.createGraphics();
+			icon.paintIcon(null, g, 0, 0);
+			g.dispose();
+			return image;
+		}
+	}
 
 	public static double getBrightness(Color colour) {
 		return Math.sqrt(0.241 * colour.getRed()*colour.getRed()

@@ -108,24 +108,24 @@ public final class ThemeManager {
 		return tmp;
 	}
 
-	private ImageIcon getImageIcon(String key){
+	private Icon getImageIcon(String key){
 		Object tmp = null;
 		tmp = classicSchema.get(key);
 		if(tmp == null)
 			return null;
-		if(tmp instanceof ImageIcon)
-			return (ImageIcon)tmp;
+		if(tmp instanceof Icon)
+			return (Icon)tmp;
 		return classicSchema.loadImageIcon(tmp.toString());
 	}
 
-	private ImageIcon getScaledImageIcon(String key, int x, int y){
-		ImageIcon tmp = null;
+	private Icon getScaledImageIcon(String key, int x, int y){
+		Icon tmp = null;
 		tmp = (ImageIcon) classicSchema.get(key + "(" + x + "," + y + ")");
 		if (tmp == null) {
 			tmp = getImageIcon(key);
 
-			if (tmp != null) {
-				tmp = new ImageIcon(tmp.getImage().getScaledInstance(x, y, Image.SCALE_SMOOTH));
+			if (tmp instanceof ImageIcon) {
+				tmp = new ImageIcon(((ImageIcon)tmp).getImage().getScaledInstance(x, y, Image.SCALE_SMOOTH));
 				classicSchema.put(key + "(" + x + "," + y + ")", tmp);
 			}
 		}
@@ -134,7 +134,7 @@ public final class ThemeManager {
 		return tmp;
 	}
 
-	public static ImageIcon getIcon(String key){
+	public static Icon getIcon(String key) {
 		return instance().getImageIcon(key);
 	}
 
@@ -142,22 +142,22 @@ public final class ThemeManager {
 		return instance().get(key);
 	}
 
-	public static ImageIcon getScaledIcon(String key,int x,int y){
+	public static Icon getScaledIcon(String key,int x,int y){
 		return instance().getScaledImageIcon(key,x,y);
 	}
 
-	public static ImageIcon getTransparentIcon(String key,Color color){
+	public static Icon getTransparentIcon(String key,Color color){
 		return instance().getTransparentImageIcon(key, color);
 	}
 
-	private ImageIcon getTransparentImageIcon(String key,Color color){
-		ImageIcon tmp = null;
+	private Icon getTransparentImageIcon(String key,Color color){
+		Icon tmp = null;
 		tmp = (ImageIcon) classicSchema.get(key + "(T)");
 		if (tmp == null) {
 			tmp = getImageIcon(key);
 
-			if (tmp != null) {
-				tmp = new ImageIcon(ImageUtilities.makeColorTransparent(tmp.getImage(), color));
+			if (tmp instanceof ImageIcon) {
+				tmp = new ImageIcon(ImageUtilities.makeColorTransparent(((ImageIcon)tmp).getImage(), color));
 				classicSchema.put(key + "(T)", tmp);
 			}
 		}
