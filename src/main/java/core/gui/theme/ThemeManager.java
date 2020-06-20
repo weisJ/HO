@@ -93,8 +93,16 @@ public final class ThemeManager {
 		return tmp;
 	}
 
-	public void put(String key,Object value){
+	public void put(String key, Object value){
 		classicSchema.put(key, value);
+	}
+
+	private  <T> T get(String key, Class<T> type) {
+		Object obj = classicSchema.get(key);
+		if (type.isInstance(obj)) {
+			return type.cast(obj);
+		}
+		return null;
 	}
 
 	public Object get(String key){
@@ -108,9 +116,8 @@ public final class ThemeManager {
 		return tmp;
 	}
 
-	private Icon getImageIcon(String key){
-		Object tmp = null;
-		tmp = classicSchema.get(key);
+	private Icon getIconImpl(String key){
+		Object tmp = classicSchema.get(key);
 		if(tmp == null)
 			return null;
 		if(tmp instanceof Icon)
@@ -118,24 +125,18 @@ public final class ThemeManager {
 		return classicSchema.loadImageIcon(tmp.toString());
 	}
 
-	private Icon getScaledImageIcon(String key, int x, int y){
-		Icon tmp = null;
-		tmp = (ImageIcon) classicSchema.get(key + "(" + x + "," + y + ")");
-		if (tmp == null) {
-			tmp = getImageIcon(key);
-
-			if (tmp instanceof ImageIcon) {
-				tmp = new ImageIcon(((ImageIcon)tmp).getImage().getScaledInstance(x, y, Image.SCALE_SMOOTH));
-				classicSchema.put(key + "(" + x + "," + y + ")", tmp);
-			}
+	private Icon getScaledIconImpl(String key, int x, int y){
+		String scaledKey = key + "(" + x + "," + y + ")";
+		Icon icon = get(scaledKey, Icon.class);
+		if (icon == null) {
+			icon = ImageUtilities.getScaledIcon(getIconImpl(key), x, y);
+			if (icon != null) put(scaledKey, icon);
 		}
-
-
-		return tmp;
+		return icon;
 	}
 
 	public static Icon getIcon(String key) {
-		return instance().getImageIcon(key);
+		return instance().getIconImpl(key);
 	}
 
 	public static Object getIconPath(String key){
@@ -143,7 +144,7 @@ public final class ThemeManager {
 	}
 
 	public static Icon getScaledIcon(String key,int x,int y){
-		return instance().getScaledImageIcon(key,x,y);
+		return instance().getScaledIconImpl(key, x, y);
 	}
 
 	public static Icon getTransparentIcon(String key,Color color){
@@ -154,7 +155,7 @@ public final class ThemeManager {
 		Icon tmp = null;
 		tmp = (ImageIcon) classicSchema.get(key + "(T)");
 		if (tmp == null) {
-			tmp = getImageIcon(key);
+			tmp = getIconImpl(key);
 
 			if (tmp instanceof ImageIcon) {
 				tmp = new ImageIcon(ImageUtilities.makeColorTransparent(((ImageIcon)tmp).getImage(), color));

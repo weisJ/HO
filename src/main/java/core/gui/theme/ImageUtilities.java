@@ -1,7 +1,6 @@
 package core.gui.theme;
 
-import com.github.weisj.darklaf.icons.EmptyIcon;
-import com.github.weisj.darklaf.icons.IconLoader;
+import com.github.weisj.darklaf.icons.*;
 import core.icon.OverlayIcon;
 import core.icon.TextIcon;
 import core.model.UserParameter;
@@ -671,7 +670,7 @@ public class ImageUtilities {
 					GraphicsEnvironment.getLocalGraphicsEnvironment();
 			GraphicsDevice gd = ge.getDefaultScreenDevice();
 			GraphicsConfiguration gc = gd.getDefaultConfiguration();
-			BufferedImage image = gc.createCompatibleImage(w, h);
+			BufferedImage image = gc.createCompatibleImage(w, h, Transparency.BITMASK);
 			Graphics2D g = image.createGraphics();
 			icon.paintIcon(null, g, 0, 0);
 			g.dispose();
@@ -695,5 +694,13 @@ public class ImageUtilities {
 		return new Color(Integer.valueOf(hexColour.substring(1, 3), 16),
 				Integer.valueOf(hexColour.substring(3, 5), 16),
 				Integer.valueOf(hexColour.substring(5, 7), 16));
+	}
+
+	public static Icon getScaledIcon(Icon icon, int width, int height) {
+		if (icon instanceof DerivableIcon) {
+			return ((DerivableIcon<Icon>) icon).derive(width, height);
+		} else {
+			return new DerivableImageIcon(iconToImage(icon), width, height, Image.SCALE_SMOOTH);
+		}
 	}
 }
